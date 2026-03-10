@@ -1,0 +1,125 @@
+.template-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.template-selector-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.template-selector-header p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.template-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.template-card {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition);
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+
+.template-card:hover {
+    border-color: var(--tpl-accent, var(--accent));
+    background: var(--bg-card-hover);
+    transform: translateX(2px);
+}
+
+.template-card.selected {
+    border-color: var(--tpl-accent, var(--accent));
+    background: rgba(99, 102, 241, 0.06);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+}
+
+.template-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.template-info {
+    flex: 1;
+}
+
+.template-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+}
+
+.template-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.template-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.template-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+}
+
+.template-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--tpl-accent, var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    margin-top: 2px;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.template-preview-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--tpl-accent, var(--accent));
+    border-radius: 3px 0 0 3px;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.template-card.selected .template-preview-bar,
+.template-card:hover .template-preview-bar {
+    opacity: 1;
+}

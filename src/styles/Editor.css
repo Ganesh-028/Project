@@ -1,0 +1,214 @@
+.editor {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+}
+
+.editor-tabs {
+    flex-wrap: wrap;
+}
+
+.tab-label {
+    display: inline;
+}
+
+.editor-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.section-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.input-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: -4px;
+}
+
+.ai-btn {
+    color: var(--accent-light);
+    border-color: rgba(99, 102, 241, 0.2);
+    background: rgba(99, 102, 241, 0.07);
+    font-size: 12px;
+    padding: 5px 10px;
+}
+
+.ai-btn:hover {
+    background: rgba(99, 102, 241, 0.14);
+    border-color: var(--accent);
+}
+
+/* Entry cards */
+.entry-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.entry-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    cursor: pointer;
+    gap: 10px;
+    user-select: none;
+}
+
+.entry-header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.entry-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 0;
+}
+
+.entry-title span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.entry-icon {
+    color: var(--accent-light);
+    flex-shrink: 0;
+}
+
+.entry-sub {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.entry-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    font-family: 'Inter', sans-serif;
+}
+
+.icon-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border);
+    color: var(--text-primary);
+}
+
+.icon-btn.danger:hover {
+    background: var(--danger-bg);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+.entry-body {
+    padding: 0 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.checkbox-row input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+.add-btn {
+    align-self: flex-start;
+}
+
+/* Skills */
+.skill-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.skills-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.suggested-skills {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.suggestion-tag {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px dashed var(--border);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: var(--transition);
+}
+
+.suggestion-tag:hover {
+    background: var(--accent-glow);
+    color: var(--accent-light);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Flat cards for certs/projects */
+.flat-card {
+    padding: 14px;
+}
+
+.flat-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
