@@ -11,5 +11,22 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <div id="cookieConsent" style="position:fixed; bottom:0; width:100%; background:#222; color:white; padding:15px; text-align:center;">
+This website uses cookies and shows ads through Google AdSense to improve your experience.
+By continuing to use this site, you agree to our use of cookies.
+<button onclick="acceptCookies()" style="margin-left:10px; padding:5px 10px;">Accept</button>
+</div>
+<script>
+function acceptCookies() {
+  document.getElementById("cookieConsent").style.display = "none";
+  localStorage.setItem("cookiesAccepted", "true");
+}
+
+window.onload = function() {
+  if(localStorage.getItem("cookiesAccepted") === "true") {
+    document.getElementById("cookieConsent").style.display = "none";
+  }
+}
+</script>
   </body>
 </html>
