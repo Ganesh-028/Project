@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import html2pdf from 'html2pdf.js';
 import { Download, Eye, Edit3, RotateCcw, Sparkles } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Editor from './components/Editor';
@@ -35,40 +35,25 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [resumeData]);
 
-  // We use a ref to store the latest options to avoid useReactToPrint staleness
-  const resumeDataRef = useRef(resumeData);
-  useEffect(() => {
-    resumeDataRef.current = resumeData;
-  }, [resumeData]);
+  const handlePrint = () => {
+    const element = printRef.current;
+    if (!element) return;
 
-  const promiseResolveRef = useRef(null);
-  const [isPrinting, setIsPrinting] = useState(false);
+    // Use current settings. Professional template uses standard A4 size (794x1123 px).
+    // Let's rely on standard html2pdf size optimizations.
+    const fileName = `${resumeData?.personal?.fullName || 'Resume'}.pdf`;
 
-  useEffect(() => {
-    if (isPrinting && promiseResolveRef.current) {
-      // Resolves the promise, letting react-to-print know the DOM is updated
-      promiseResolveRef.current();
-    }
-  }, [isPrinting]);
+    // Using default options tailored for standard A4 document without cutting issues
+    const opt = {
+      margin: 0,
+      filename: fileName,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' } // using points scaling
+    };
 
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: () => `${resumeDataRef.current?.personal?.fullName || 'Resume'} - Resume`,
-    onBeforePrint: () => {
-      return new Promise((resolve) => {
-        promiseResolveRef.current = resolve;
-        setIsPrinting(true);
-      });
-    },
-    onAfterPrint: () => {
-      promiseResolveRef.current = null;
-      setIsPrinting(false);
-    },
-    pageStyle: `
-      @page { size: A4; margin: 0; }
-      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-    `,
-  });
+    html2pdf().set(opt).from(element).save();
+  };
 
   const handleLoadSample = () => setResumeData(sampleResumeData);
   const handleReset = () => { if (confirm('Reset all resume data?')) setResumeData(initialResumeData); };
