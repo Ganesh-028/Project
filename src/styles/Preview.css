@@ -19,3 +19,15 @@
     border-radius: 4px;
     overflow: hidden;
 }
+
+@media print {
+    .preview-paper {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}

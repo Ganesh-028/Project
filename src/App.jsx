@@ -35,9 +35,35 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [resumeData]);
 
+  // We use a ref to store the latest options to avoid useReactToPrint staleness
+  const resumeDataRef = useRef(resumeData);
+  useEffect(() => {
+    resumeDataRef.current = resumeData;
+  }, [resumeData]);
+
+  const promiseResolveRef = useRef(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  useEffect(() => {
+    if (isPrinting && promiseResolveRef.current) {
+      // Resolves the promise, letting react-to-print know the DOM is updated
+      promiseResolveRef.current();
+    }
+  }, [isPrinting]);
+
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: `${resumeData.personal.fullName || 'Resume'} - Resume`,
+    documentTitle: () => `${resumeDataRef.current?.personal?.fullName || 'Resume'} - Resume`,
+    onBeforePrint: () => {
+      return new Promise((resolve) => {
+        promiseResolveRef.current = resolve;
+        setIsPrinting(true);
+      });
+    },
+    onAfterPrint: () => {
+      promiseResolveRef.current = null;
+      setIsPrinting(false);
+    },
     pageStyle: `
       @page { size: A4; margin: 0; }
       @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
