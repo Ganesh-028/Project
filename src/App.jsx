@@ -10,7 +10,7 @@ import { initialResumeData, sampleResumeData } from './data/resumeInitialState';
 import { calculateATSScore } from './services/aiService';
 import './index.css';
 import './styles/App.css';
-
+import AdComponent from "./components/AdComponent";
 export default function App() {
   const [resumeData, setResumeData] = useState(initialResumeData);
   const [template, setTemplate] = useState('professional');
@@ -65,6 +65,10 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
       />
+      {/* Google AdSense */}
+    <AdComponent />
+
+    <main className="app-main"></main>
 
       {/* ATS score banner */}
       {atsResult && (
