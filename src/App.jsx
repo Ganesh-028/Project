@@ -11,6 +11,9 @@ import { calculateATSScore } from './services/aiService';
 import './index.css';
 import './styles/App.css';
 import AdComponent from "./components/AdComponent";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
 export default function App() {
   const [resumeData, setResumeData] = useState(initialResumeData);
   const [template, setTemplate] = useState('professional');
@@ -65,6 +68,11 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
       />
+      <footer>
+  <a href="/about">About</a> |
+  <a href="/contact">Contact</a> |
+  <a href="/privacy">Privacy Policy</a>
+</footer>
       {/* Google AdSense */}
       <AdComponent />
       {/* ATS score banner */}
