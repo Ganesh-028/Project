@@ -14,6 +14,7 @@ import AdComponent from "./components/AdComponent";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
+import { Routes, Route, Link } from "react-router-dom";
 export default function App() {
   const [resumeData, setResumeData] = useState(initialResumeData);
   const [template, setTemplate] = useState('professional');
@@ -68,10 +69,10 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
       />
-      <footer>
-  <a href="/about">About</a> |
-  <a href="/contact">Contact</a> |
-  <a href="/privacy">Privacy Policy</a>
+     <footer>
+  <Link to="/about">About</Link> |
+  <Link to="/contact">Contact</Link> |
+  <Link to="/privacy">Privacy Policy</Link>
 </footer>
       {/* Google AdSense */}
       <AdComponent />
@@ -144,6 +145,11 @@ export default function App() {
           </div>
         </div>
       </main>
+<Routes>
+  <Route path="/about" element={<About />} />
+  <Route path="/contact" element={<Contact />} />
+  <Route path="/privacy" element={<Privacy />} />
+</Routes>
     </div>
   );
 }
