@@ -22,106 +22,136 @@ const SUMMARY_TEMPLATES = [
     (data) => `Innovative ${data.title || 'professional'} specializing in ${(data.skills || []).slice(0, 3).join(', ')}. Adept at translating technical requirements into practical solutions. Recognized for strong analytical skills, attention to detail, and a collaborative approach to teamwork.`,
 ];
 
+const SWE_HARD_SKILLS = [
+  'javascript', 'typescript', 'react', 'node.js', 'next.js', 'go', 'golang', 'rust', 'python',
+  'java', 'c++', 'aws', 'docker', 'kubernetes', 'graphql', 'rest api', 'postgresql', 'mongodb',
+  'system design', 'microservices', 'ci/cd', 'agile', 'scrum', 'tdd', 'testing', 'security'
+];
+
 export function calculateATSScore(resumeData) {
-    let score = 0;
-    const issues = [];
-    const suggestions = [];
-    const strengths = [];
+  const { personal, experience, education, skills, certifications, projects } = resumeData;
+  
+  let score = 0;
+  const analysis = {
+    completeness: { score: 0, max: 25, items: [] },
+    impact: { score: 0, max: 40, items: [] },
+    keywords: { score: 0, max: 25, items: [] },
+    extra: { score: 0, max: 10, items: [] }
+  };
+  
+  const issues = [];
+  const strengths = [];
+  const suggestions = [];
 
-    const { personal, experience, education, skills, certifications, projects } = resumeData;
+  // 1. COMPLETENESS (25 pts)
+  let compScore = 0;
+  if (personal.fullName?.trim()) compScore += 3;
+  if (personal.email?.trim()) compScore += 3;
+  if (personal.phone?.trim()) compScore += 2;
+  if (personal.location?.trim()) compScore += 2;
+  if (personal.linkedin?.trim()) compScore += 5;
+  if (personal.portfolio?.trim() || personal.github?.trim()) compScore += 5;
+  
+  const summaryLength = personal.summary?.trim().length || 0;
+  if (summaryLength > 150) {
+    compScore += 5;
+    strengths.push("Excellent summary depth");
+  } else if (summaryLength > 0) {
+    compScore += 2;
+    suggestions.push("Expand your summary to ~200 characters for better narrative impact");
+  } else {
+    issues.push("Missing professional summary");
+  }
+  analysis.completeness.score = compScore;
 
-    // --- PERSONAL INFO (20 pts) ---
-    if (personal.fullName?.trim()) { score += 3; strengths.push('Full name present'); }
-    if (personal.email?.trim()) { score += 3; strengths.push('Email address present'); }
-    if (personal.phone?.trim()) { score += 2; strengths.push('Phone number included'); }
-    if (personal.location?.trim()) { score += 2; strengths.push('Location listed'); }
-    if (personal.linkedin?.trim()) { score += 3; strengths.push('LinkedIn profile included'); }
-    if (personal.title?.trim()) { score += 3; strengths.push('Job title specified'); }
-    if (personal.summary?.trim() && personal.summary.length > 80) {
-        score += 4;
-        strengths.push('Professional summary included');
-    } else {
-        issues.push('Summary is missing or too short (aim for 80+ characters)');
-        suggestions.push('Add a compelling professional summary with key skills and achievements');
-    }
-
-    // --- EXPERIENCE (30 pts) ---
-    const validExp = experience.filter(e => e.company?.trim() && e.role?.trim() && e.description?.trim());
-    if (validExp.length === 0) {
-        issues.push('No work experience entries found');
-        suggestions.push('Add at least one work experience entry');
-    } else if (validExp.length === 1) {
-        score += 10;
-    } else {
-        score += 20;
-        strengths.push(`${validExp.length} experience entries`);
-    }
-
-    let hasBullets = false, hasMetrics = false;
-    validExp.forEach(exp => {
-        const desc = exp.description?.toLowerCase() || '';
-        if (desc.includes('•') || desc.includes('-') || desc.includes('\n')) hasBullets = true;
-        ATS_KEYWORDS.metrics.forEach(m => { if (desc.includes(m)) hasMetrics = true; });
+  // 2. IMPACT & DEPTH (40 pts)
+  let impactScore = 0;
+  const validExp = experience.filter(e => e.role && e.description);
+  
+  // Experience Depth
+  if (validExp.length >= 2) impactScore += 10;
+  else if (validExp.length === 1) impactScore += 5;
+  
+  // Action Verbs & Metrics
+  let totalBullets = 0;
+  let actionVerbCount = 0;
+  let metricCount = 0;
+  
+  validExp.forEach(exp => {
+    const desc = exp.description.toLowerCase();
+    const bullets = desc.split('\n').filter(b => b.trim().length > 10);
+    totalBullets += bullets.length;
+    
+    ATS_KEYWORDS.technical.forEach(verb => {
+      if (desc.includes(verb)) actionVerbCount++;
     });
+    
+    ATS_KEYWORDS.metrics.forEach(metric => {
+       const regex = new RegExp(`\\d+.*${metric}|${metric}.*\\d+`, 'i');
+       if (regex.test(desc)) metricCount++;
+    });
+  });
 
-    if (hasBullets) { score += 5; strengths.push('Bullet-point format used in experience'); }
-    else { issues.push('Use bullet points in experience descriptions'); suggestions.push('Start each bullet with an action verb (Led, Built, Optimized...)'); }
+  if (actionVerbCount >= 5) impactScore += 10;
+  if (metricCount >= 3) {
+    impactScore += 15;
+    strengths.push("Strong use of impact metrics");
+  } else if (metricCount > 0) {
+    impactScore += 7;
+    suggestions.push("Quantify more achievements with specific numbers and percentages");
+  } else {
+    issues.push("Experience lacks measurable metrics");
+  }
+  
+  if (totalBullets >= 6) impactScore += 5;
+  analysis.impact.score = impactScore;
 
-    if (hasMetrics) { score += 5; strengths.push('Quantified achievements with metrics'); }
-    else { suggestions.push('Add numbers and metrics (e.g., "Reduced load time by 40%", "Managed team of 5")'); }
+  // 3. KEYWORDS & SKILLS (25 pts)
+  let keyScore = 0;
+  let matchingSkills = 0;
+  
+  const userSkills = skills.map(s => s.toLowerCase());
+  SWE_HARD_SKILLS.forEach(skill => {
+    if (userSkills.includes(skill)) matchingSkills++;
+  });
 
-    // --- EDUCATION (15 pts) ---
-    const validEdu = education.filter(e => e.institution?.trim() && e.degree?.trim());
-    if (validEdu.length > 0) {
-        score += 15;
-        strengths.push('Education section complete');
-    } else {
-        issues.push('Education section is empty');
-        suggestions.push('Add your educational background including degree and institution');
-    }
+  if (matchingSkills >= 10) keyScore += 15;
+  else if (matchingSkills >= 5) keyScore += 10;
+  else keyScore += 5;
 
-    // --- SKILLS (20 pts) ---
-    if (skills.length === 0) {
-        issues.push('No skills listed');
-        suggestions.push('Add at least 6-10 relevant technical skills');
-    } else if (skills.length < 5) {
-        score += 5;
-        suggestions.push('Add more skills (aim for 8-12 for better ATS matching)');
-    } else if (skills.length <= 12) {
-        score += 20;
-        strengths.push(`${skills.length} skills listed (optimal range)`);
-    } else {
-        score += 15;
-        suggestions.push('Consider trimming skills to the most relevant 10-12 (too many can dilute focus)');
-    }
+  if (userSkills.length >= 8 && userSkills.length <= 15) {
+    keyScore += 10;
+    strengths.push("Optimal skill list density");
+  } else if (userSkills.length > 15) {
+    keyScore += 5;
+    suggestions.push("Skill list is slightly crowded; prioritize top 12 relevant skills");
+  }
+  analysis.keywords.score = keyScore;
 
-    // --- CERTIFICATIONS (8 pts) ---
-    const validCerts = certifications.filter(c => c.name?.trim());
-    if (validCerts.length > 0) {
-        score += 8;
-        strengths.push('Certifications included');
-    } else {
-        suggestions.push('Add certifications to boost credibility (e.g., AWS, Google, PMP)');
-    }
+  // 4. EXTRA CREDENTIALS (10 pts)
+  let extraScore = 0;
+  if (projects.filter(p => p.name).length >= 2) extraScore += 5;
+  if (certifications.filter(c => c.name).length >= 1) extraScore += 5;
+  analysis.extra.score = extraScore;
 
-    // --- PROJECTS (7 pts) ---
-    const validProjs = projects.filter(p => p.name?.trim() && p.description?.trim());
-    if (validProjs.length > 0) {
-        score += 7;
-        strengths.push('Projects section showcases hands-on work');
-    } else {
-        suggestions.push('Add personal or open-source projects to demonstrate applied skills');
-    }
+  // Calculate Finals
+  const finalScore = compScore + impactScore + keyScore + extraScore;
+  let grade = 'D';
+  if (finalScore >= 90) grade = 'A+';
+  else if (finalScore >= 80) grade = 'A';
+  else if (finalScore >= 70) grade = 'B';
+  else if (finalScore >= 60) grade = 'C';
+  else if (finalScore >= 40) grade = 'D';
+  else grade = 'F';
 
-    const finalScore = Math.min(100, score);
-    let grade = 'D';
-    if (finalScore >= 90) grade = 'A+';
-    else if (finalScore >= 80) grade = 'A';
-    else if (finalScore >= 70) grade = 'B';
-    else if (finalScore >= 60) grade = 'C';
-    else if (finalScore >= 50) grade = 'D';
-
-    return { score: finalScore, grade, issues, suggestions, strengths };
+  return { 
+    score: finalScore, 
+    grade, 
+    issues, 
+    suggestions, 
+    strengths,
+    breakdown: analysis 
+  };
 }
 
 export async function generateAISummary(resumeData) {
@@ -141,4 +171,63 @@ export async function enhanceBulletPoint(text) {
     const firstWord = cleaned.split(' ')[0];
     const rest = cleaned.substring(firstWord.length);
     return `${verb}${rest}, resulting in measurable improvements to team efficiency and product quality`;
+}
+
+export async function analyzeRawText(text) {
+  // Simple simulation of text-based analysis
+  const normalizedText = text.toLowerCase();
+  
+  const analysis = {
+    completeness: { score: 0, max: 25 },
+    impact: { score: 0, max: 40 },
+    keywords: { score: 0, max: 25 },
+    extra: { score: 0, max: 10 }
+  };
+  
+  // 1. COMPLETENESS (25 pts)
+  if (normalizedText.includes('@')) analysis.completeness.score += 5;
+  if (normalizedText.includes('phone') || normalizedText.includes('+')) analysis.completeness.score += 5;
+  if (normalizedText.includes('linkedin.com')) analysis.completeness.score += 5;
+  if (normalizedText.includes('github.com')) analysis.completeness.score += 5;
+  if (text.length > 500) analysis.completeness.score += 5;
+
+  // 2. IMPACT (40 pts)
+  const technicalWords = ['developed', 'engineered', 'implemented', 'architected', 'optimized', 'designed', 'built', 'deployed', 'automated', 'integrated', 'launched', 'created', 'led', 'managed', 'collaborated', 'improved', 'reduced', 'increased', 'delivered', 'scaled'];
+  const metricWords = ['%', 'million', 'billion', 'thousand', '$', 'users', 'revenue', 'performance', 'efficiency', 'cost', 'time', 'growth', 'hours', 'minutes', 'days', 'weeks'];
+  
+  let verbCount = 0;
+  technicalWords.forEach(v => { if (normalizedText.includes(v)) verbCount++; });
+  analysis.impact.score = Math.min(20, verbCount * 2);
+  
+  let metricCount = 0;
+  metricWords.forEach(m => { if (normalizedText.includes(m)) metricCount++; });
+  analysis.impact.score += Math.min(20, metricCount * 2);
+
+  // 3. KEYWORDS (25 pts)
+  const hardSkills = ['javascript', 'typescript', 'react', 'node.js', 'next.js', 'go', 'golang', 'rust', 'python', 'java', 'c++', 'aws', 'docker', 'kubernetes', 'graphql', 'rest api', 'postgresql', 'mongodb', 'system design', 'microservices', 'ci/cd', 'agile', 'scrum', 'tdd', 'testing', 'security'];
+  let skillCount = 0;
+  hardSkills.forEach(s => { if (normalizedText.includes(s.toLowerCase())) skillCount++; });
+  analysis.keywords.score = Math.min(25, skillCount * 2);
+
+  // 4. EXTRA (10 pts)
+  if (normalizedText.includes('project')) analysis.extra.score += 5;
+  if (normalizedText.includes('certificat') || normalizedText.includes('award')) analysis.extra.score += 5;
+
+  const finalScore = analysis.completeness.score + analysis.impact.score + analysis.keywords.score + analysis.extra.score;
+  
+  let grade = 'D';
+  if (finalScore >= 90) grade = 'A+';
+  else if (finalScore >= 80) grade = 'A';
+  else if (finalScore >= 70) grade = 'B';
+  else if (finalScore >= 60) grade = 'C';
+  else grade = 'D';
+
+  return {
+    score: finalScore,
+    grade,
+    issues: ["Note: Scored based on raw text analysis. Contact info and formatting depth are estimated."],
+    strengths: ["Text extraction successful", `${skillCount} key skills identified`],
+    suggestions: ["Fill in the editor manually for a more accurate 24-point check."],
+    breakdown: analysis
+  };
 }

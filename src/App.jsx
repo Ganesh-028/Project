@@ -12,6 +12,8 @@ import AdComponent from "./components/AdComponent";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
+import ArticleView from "./pages/ArticleView";
+import TipsPanel from "./components/TipsPanel";
 
 import { initialResumeData, sampleResumeData } from "./data/resumeInitialState";
 import { calculateATSScore } from "./services/aiService";
@@ -23,6 +25,7 @@ export default function App() {
   const [resumeData, setResumeData] = useState(initialResumeData);
   const [template, setTemplate] = useState("professional");
   const [atsResult, setAtsResult] = useState(null);
+  const [isScanned, setIsScanned] = useState(false);
   const [view, setView] = useState("editor");
   const [theme, setTheme] = useState("dark");
 
@@ -36,12 +39,27 @@ export default function App() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
   useEffect(() => {
+    // Only auto-calculate if not in "scanned" mode
+    if (isScanned) return;
+
     const timer = setTimeout(() => {
       const result = calculateATSScore(resumeData);
       setAtsResult(result);
     }, 600);
 
     return () => clearTimeout(timer);
+  }, [resumeData, isScanned]);
+
+  const handleScanComplete = (result) => {
+    setAtsResult(result);
+    setIsScanned(true);
+  };
+
+  // Reset scan mode when user starts editing
+  useEffect(() => {
+    if (isScanned) {
+        setIsScanned(false);
+    }
   }, [resumeData]);
 
   const handlePrint = () => {
@@ -82,6 +100,8 @@ export default function App() {
               onToggleTheme={toggleTheme}
             />
 
+            <TipsPanel />
+
             <footer>
               <Link to="/about">About</Link> |{" "}
               <Link to="/contact">Contact</Link> |{" "}
@@ -114,7 +134,10 @@ export default function App() {
 
                 <hr className="divider" />
 
-                <ATSPanel atsResult={atsResult} />
+                <ATSPanel 
+                  atsResult={atsResult} 
+                  onScanComplete={handleScanComplete} 
+                />
 
                 <hr className="divider" />
 
@@ -214,6 +237,7 @@ export default function App() {
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/tips/:id" element={<ArticleView />} />
     </Routes>
   );
 }

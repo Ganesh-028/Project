@@ -1,5 +1,6 @@
-import React from 'react';
-import { CheckCircle, AlertCircle, XCircle, Lightbulb, TrendingUp } from 'lucide-react';
+import { CheckCircle, AlertCircle, XCircle, Lightbulb, TrendingUp, Sparkles } from 'lucide-react';
+import FileUploader from './FileUploader';
+import { analyzeRawText } from '../services/aiService';
 import '../styles/ATSPanel.css';
 
 function ScoreCircle({ score }) {
@@ -32,19 +33,38 @@ function ScoreCircle({ score }) {
     );
 }
 
-export default function ATSPanel({ atsResult }) {
+export default function ATSPanel({ atsResult, onScanComplete }) {
+    const handleScan = async (text) => {
+        const result = await analyzeRawText(text);
+        onScanComplete(result);
+    };
+
     if (!atsResult) {
         return (
-            <div className="ats-panel empty-ats">
-                <TrendingUp size={32} className="empty-icon" />
-                <p>Fill in your resume to see your ATS score</p>
+            <div className="ats-panel">
+                 <div className="ats-header" style={{ marginBottom: '1.5rem' }}>
+                    <div>
+                        <h3 className="ats-title">ATS Score Checker</h3>
+                        <p className="ats-subtitle">Upload or fill details to start</p>
+                    </div>
+                </div>
+                <FileUploader onAnalysisComplete={handleScan} />
+                <div className="empty-ats" style={{ marginTop: '1rem' }}>
+                    <TrendingUp size={32} className="empty-icon" />
+                    <p>Fill in your resume or upload a PDF to see your ATS score</p>
+                </div>
             </div>
         );
     }
 
-    const { score, grade, issues, suggestions, strengths } = atsResult;
+    const { score, grade, issues, suggestions, strengths, breakdown } = atsResult;
     const badgeClass = score >= 80 ? 'badge-success' : score >= 60 ? 'badge-warning' : 'badge-danger';
     const label = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : 'Needs Work';
+
+    const getPercent = (cat) => {
+        if (!breakdown || !breakdown[cat]) return 0;
+        return (breakdown[cat].score / breakdown[cat].max) * 100;
+    };
 
     return (
         <div className="ats-panel">
@@ -56,31 +76,45 @@ export default function ATSPanel({ atsResult }) {
                 <span className={`badge ${badgeClass} ats-grade`}>{grade} · {label}</span>
             </div>
 
+            <FileUploader onAnalysisComplete={handleScan} />
+
             <div className="ats-score-row">
                 <ScoreCircle score={score} />
                 <div className="ats-breakdown">
                     <div className="progress-item">
-                        <span className="progress-label">Contact Info</span>
+                        <div className="progress-header">
+                            <span className="progress-label">Contact & Info</span>
+                            <span className="progress-value">{Math.round(getPercent('completeness'))}%</span>
+                        </div>
                         <div className="progress-bar-outer">
-                            <div className="progress-bar-inner" style={{ width: `${Math.min(100, score * 1.2)}%` }} />
+                            <div className="progress-bar-inner" style={{ width: `${getPercent('completeness')}%` }} />
                         </div>
                     </div>
                     <div className="progress-item">
-                        <span className="progress-label">Experience</span>
+                        <div className="progress-header">
+                            <span className="progress-label">Impact & Metrics</span>
+                            <span className="progress-value">{Math.round(getPercent('impact'))}%</span>
+                        </div>
                         <div className="progress-bar-outer">
-                            <div className="progress-bar-inner" style={{ width: `${Math.min(100, score * 0.9)}%` }} />
+                            <div className="progress-bar-inner" style={{ width: `${getPercent('impact')}%` }} />
                         </div>
                     </div>
                     <div className="progress-item">
-                        <span className="progress-label">Keywords</span>
+                        <div className="progress-header">
+                            <span className="progress-label">Keywords</span>
+                            <span className="progress-value">{Math.round(getPercent('keywords'))}%</span>
+                        </div>
                         <div className="progress-bar-outer">
-                            <div className="progress-bar-inner" style={{ width: `${Math.min(100, score * 0.8)}%` }} />
+                            <div className="progress-bar-inner" style={{ width: `${getPercent('keywords')}%` }} />
                         </div>
                     </div>
                     <div className="progress-item">
-                        <span className="progress-label">Skills</span>
+                        <div className="progress-header">
+                            <span className="progress-label">Extra Credentials</span>
+                            <span className="progress-value">{Math.round(getPercent('extra'))}%</span>
+                        </div>
                         <div className="progress-bar-outer">
-                            <div className="progress-bar-inner" style={{ width: `${Math.min(100, score)}%` }} />
+                            <div className="progress-bar-inner" style={{ width: `${getPercent('extra')}%` }} />
                         </div>
                     </div>
                 </div>
