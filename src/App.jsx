@@ -55,6 +55,18 @@ export default function App() {
     setIsScanned(true);
   };
 
+  const handlePopulateResume = () => {
+    if (atsResult?.parsedData) {
+      setResumeData(prev => ({
+        ...prev,
+        ...atsResult.parsedData,
+        settings: prev.settings // Preserve typography settings
+      }));
+      setIsScanned(false);
+      // Optional: show a success notification or toast
+    }
+  };
+
   // Reset scan mode when user starts editing
   useEffect(() => {
     if (isScanned) {
@@ -137,6 +149,7 @@ export default function App() {
                 <ATSPanel 
                   atsResult={atsResult} 
                   onScanComplete={handleScanComplete} 
+                  onPopulate={handlePopulateResume}
                 />
 
                 <hr className="divider" />

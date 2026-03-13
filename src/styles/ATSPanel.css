@@ -86,6 +86,35 @@
     gap: 10px;
 }
 
+.populate-btn {
+    width: 100%;
+    margin: 4px 0 8px 0;
+    padding: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.populate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    filter: brightness(1.1);
+}
+
+.populate-btn:active {
+    transform: translateY(1px);
+}
+
 .progress-item {
     display: flex;
     flex-direction: column;

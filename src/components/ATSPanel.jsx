@@ -33,7 +33,7 @@ function ScoreCircle({ score }) {
     );
 }
 
-export default function ATSPanel({ atsResult, onScanComplete }) {
+export default function ATSPanel({ atsResult, onScanComplete, onPopulate }) {
     const handleScan = async (text) => {
         const result = await analyzeRawText(text);
         onScanComplete(result);
@@ -77,6 +77,12 @@ export default function ATSPanel({ atsResult, onScanComplete }) {
             </div>
 
             <FileUploader onAnalysisComplete={handleScan} />
+
+            {atsResult.parsedData && (
+                <button className="btn btn-primary btn-sm populate-btn" onClick={onPopulate}>
+                    <Sparkles size={14} /> Auto-Fill Editor from Scanned File
+                </button>
+            )}
 
             <div className="ats-score-row">
                 <ScoreCircle score={score} />

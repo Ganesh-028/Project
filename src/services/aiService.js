@@ -228,6 +228,89 @@ export async function analyzeRawText(text) {
     issues: ["Note: Scored based on raw text analysis. Contact info and formatting depth are estimated."],
     strengths: ["Text extraction successful", `${skillCount} key skills identified`],
     suggestions: ["Fill in the editor manually for a more accurate 24-point check."],
-    breakdown: analysis
+    breakdown: analysis,
+    parsedData: parseResumeText(text) // Add parsed data for population
   };
+}
+
+function parseResumeText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const normalizedText = text.toLowerCase();
+  
+  const parsed = {
+    personal: {
+      fullName: lines[0] || '',
+      email: text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0] || '',
+      phone: text.match(/[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}/)?.[0] || '',
+      linkedin: text.match(/linkedin\.com\/in\/[a-zA-Z0-9_-]+/)?.[0] || '',
+      github: text.match(/github\.com\/[a-zA-Z0-9_-]+/)?.[0] || '',
+      location: text.match(/(?:[A-Z][a-z]+(?: [A-Z][a-z]+)*),? (?:[A-Z]{2}|[A-Z][a-z]+)/)?.[0] || '',
+      summary: '',
+      title: lines[1] || ''
+    },
+    skills: [],
+    experience: [],
+    education: [],
+    certifications: [],
+    projects: []
+  };
+
+  // 1. Extract Skills
+  const hardSkills = ['javascript', 'typescript', 'react', 'node.js', 'next.js', 'go', 'golang', 'rust', 'python', 'java', 'c++', 'aws', 'docker', 'kubernetes', 'graphql', 'rest api', 'postgresql', 'mongodb', 'system design', 'microservices', 'ci/cd', 'agile', 'scrum', 'tdd', 'testing', 'security'];
+  hardSkills.forEach(skill => {
+    if (normalizedText.includes(skill)) {
+      // Capitalize first letter of each word
+      const capSkill = skill.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      parsed.skills.push(capSkill);
+    }
+  });
+
+  // 2. Simple Section Splitting
+  const sections = text.split(/(EXPERIENCE|WORK EXPERIENCE|EXPERIENCE|PROJECTS|EDUCATION|CERTIFICATIONS|SKILLS|STRENGTHS|SUMMARY)/i);
+  
+  for (let i = 0; i < sections.length; i++) {
+    const sectionName = sections[i].toUpperCase();
+    const content = sections[i+1] || '';
+    
+    if (sectionName.includes('SUMMARY')) {
+      parsed.personal.summary = content.trim().substring(0, 500);
+    } else if (sectionName.includes('EXPERIENCE') || sectionName.includes('WORK')) {
+      // Very basic extraction: split by common date patterns or job titles
+      const entries = content.split(/\n(?=[A-Z])/);
+      entries.forEach(entry => {
+        if (entry.length > 20) {
+          parsed.experience.push({
+            id: `scan-exp-${Date.now()}-${Math.random()}`,
+            company: 'Extracted Company',
+            role: 'Extracted Role',
+            description: entry.trim(),
+            startDate: '',
+            endDate: '',
+            current: false
+          });
+        }
+      });
+    } else if (sectionName.includes('EDUCATION')) {
+      const entries = content.split('\n');
+      entries.forEach(entry => {
+        if (entry.length > 10) {
+          parsed.education.push({
+            id: `scan-edu-${Date.now()}`,
+            institution: entry.trim(),
+            degree: '',
+            field: '',
+            startDate: '',
+            endDate: ''
+          });
+        }
+      });
+    }
+  }
+
+  // Cleanup: Dedup skills and limit entries
+  parsed.skills = [...new Set(parsed.skills)].slice(0, 15);
+  parsed.experience = parsed.experience.slice(0, 3);
+  parsed.education = parsed.education.slice(0, 2);
+
+  return parsed;
 }
